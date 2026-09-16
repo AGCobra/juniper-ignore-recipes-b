@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Juniper Cursor Ignore Recipe Builder</title>
+  <style>
+    body { max-width: 42rem; margin: 3rem auto; padding: 0 1rem; font: 1rem/1.5 system-ui, sans-serif; color: #222; }
+    h1 { font-size: 1.7rem; line-height: 1.2; }
+    fieldset { padding: 1rem; }
+    label { display: block; margin: .4rem 0; }
+    textarea { box-sizing: border-box; width: 100%; padding: .75rem; font: .9rem/1.5 monospace; }
+    button { margin-top: .75rem; padding: .5rem .8rem; font: inherit; }
+    :focus-visible { outline: 3px solid #1458b4; outline-offset: 3px; }
+    #status { min-height: 1.5em; }
+    footer { margin-top: 2rem; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Juniper Cursor Ignore Recipe Builder</h1>
+    <p>Choose optional patterns for a small <code>.cursorignore</code> snippet.</p>
+    <p>The juniper recipe notebook keeps dependency folders, generated builds, and test reports in separate choices.</p>
+
+    <fieldset id="choices" disabled>
+      <legend>Include these groups</legend>
+      <label><input type="checkbox" name="group" value="dependencies" checked> Dependencies: <code>node_modules/</code></label>
+      <label><input type="checkbox" name="group" value="builds" checked> Generated builds: <code>dist/</code> and <code>build/</code></label>
+      <label><input type="checkbox" name="group" value="coverage" checked> Test coverage: <code>coverage/</code></label>
+      <label><input type="checkbox" name="group" value="logs" checked> Logs: <code>*.log</code></label>
+    </fieldset>
+
+    <label for="recipe"><strong>Recipe preview</strong></label>
+    <textarea id="recipe" rows="17" readonly spellcheck="false" aria-describedby="instructions"># Optional .cursorignore examples
+
+# Dependencies
+node_modules/
+
+# Generated builds
+dist/
+build/
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+</textarea>
+    <button id="copy" type="button" disabled>Copy recipe</button>
+    <p id="status" role="status" aria-live="polite" aria-atomic="true"></p>
+    <noscript><p>JavaScript is off; select the default recipe above and copy it manually.</p></noscript>
+
+    <p id="instructions">Review the preview, then merge only the lines you need into your project-root <code>.cursorignore</code>; keep any existing rules you still need.</p>
+    <p>Cursor uses gitignore syntax and already ignores many common files by default. These examples are optional. Terminal and MCP tools may still access ignored files, so <code>.cursorignore</code> is not complete protection for secrets.</p>
+    <p><a href="https://cursor.com/docs/reference/ignore-file">Cursor documentation: Ignore files</a> (checked September 16, 2026).</p>
+    <p>This page creates text in your browser; it does not edit files, upload data, or make network requests from its script.</p>
+  </main>
+  <footer>This independent utility is also part of a public experiment on discovering newly published pages through text search; it is not affiliated with Cursor.</footer>
+  <script>
+    'use strict';
+    const groups = {
+      dependencies: '# Dependencies\nnode_modules/',
+      builds: '# Generated builds\ndist/\nbuild/',
+      coverage: '# Test coverage\ncoverage/',
+      logs: '# Logs\n*.log'
+    };
+    const choices = document.getElementById('choices');
+    const recipe = document.getElementById('recipe');
+    const copyButton = document.getElementById('copy');
+    const status = document.getElementById('status');
+
+    function updateRecipe() {
+      const selected = Array.from(choices.querySelectorAll('input:checked'), input => groups[input.value]);
+      recipe.value = selected.length
+        ? '# Optional .cursorignore examples\n\n' + selected.join('\n\n') + '\n'
+        : '# No optional exclusions selected.\n';
+      status.textContent = 'Recipe updated.';
+    }
+
+    choices.addEventListener('change', updateRecipe);
+    copyButton.addEventListener('click', async () => {
+      try {
+        if (!navigator.clipboard || !navigator.clipboard.writeText) throw new Error('Clipboard unavailable');
+        await navigator.clipboard.writeText(recipe.value);
+        status.textContent = 'Recipe copied.';
+      } catch {
+        recipe.focus();
+        recipe.select();
+        recipe.setSelectionRange(0, recipe.value.length);
+        status.textContent = 'Recipe selected. Press Ctrl+C or Command+C to copy, or use your device’s Copy command.';
+      }
+    });
+    choices.disabled = false;
+    copyButton.disabled = false;
+  </script>
+</body>
+</html>
